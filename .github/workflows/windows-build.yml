@@ -1,0 +1,40 @@
+name: Build Windows OTCv8
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest  # Runner Windows real (VS2022 + vcpkg pré-instalado)
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup vcpkg
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
+        cd C:\vcpkg
+        .\bootstrap-vcpkg.bat
+        .\vcpkg integrate install
+
+    - name: Install dependencies
+      run: |
+        C:\vcpkg\vcpkg install --triplet x86-windows-static boost-asio boost-iostreams boost-beast boost-system boost-variant boost-lockfree boost-process boost-program-options boost-filesystem boost-uuid luajit glew physfs openal-soft libogg libvorbis zlib libzip openssl stb
+
+    - name: CMake Configure
+      run: |
+        cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DOTCLIENT_LUAJIT=ON -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+
+    - name: Build
+      run: cmake --build build --config Release --parallel
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: otclientv8-windows
+        path: build/Release/otclient*.exe
