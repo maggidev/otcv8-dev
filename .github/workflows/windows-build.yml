@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:  # Permite rodar manualmente
+  workflow_dispatch:  # Rodar manualmente
 
 jobs:
   build-windows:
@@ -18,7 +18,7 @@ jobs:
         submodules: recursive
 
     - name: Configurar vcpkg
-      shell: pwsh  # Garante PowerShell moderno
+      shell: pwsh
       run: |
         git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
         cd C:\vcpkg
@@ -29,8 +29,8 @@ jobs:
       shell: pwsh
       run: |
         C:\vcpkg\vcpkg install --triplet x86-windows-static `
-        boost-asio `
         boost-iostreams `
+        boost-asio `
         boost-beast `
         boost-system `
         boost-variant `
@@ -47,10 +47,9 @@ jobs:
         libvorbis `
         zlib `
         libzip `
-        openssl `
-        stb
+        openssl
 
-    - name: Configurar CMake
+    - name: Configurar CMake (com otimizações máximas)
       shell: pwsh
       run: |
         cmake -B build -S . `
@@ -59,15 +58,15 @@ jobs:
         -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
 
-    - name: Compilar (Release)
+    - name: Compilar (Release paralelo)
       shell: pwsh
       run: |
         cmake --build build --config Release --parallel
 
-    - name: Upload do executável (Artifact)
+    - name: Upload do client otimizado
       uses: actions/upload-artifact@v4
       with:
-        name: otclientv8-windows-otimizado
+        name: otclientv8-windows-ninja
         path: |
           build/Release/otclient*.exe
           build/Release/*.dll
