@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:  # Rodar manualmente
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -25,37 +25,38 @@ jobs:
         .\bootstrap-vcpkg.bat
         .\vcpkg integrate install
 
-    - name: Instalar dependências (x86-windows-static)
+    - name: Instalar dependências (formato correto com :triplet)
       shell: pwsh
       run: |
         C:\vcpkg\vcpkg install --triplet x86-windows-static `
-        boost-iostreams `
-        boost-asio `
-        boost-beast `
-        boost-system `
-        boost-variant `
-        boost-lockfree `
-        boost-process `
-        boost-program-options `
-        boost-filesystem `
-        boost-uuid `
-        luajit `
-        glew `
-        physfs `
-        openal-soft `
-        libogg `
-        libvorbis `
-        zlib `
-        libzip `
-        openssl
+        boost-iostreams:x86-windows-static `
+        boost-asio:x86-windows-static `
+        boost-beast:x86-windows-static `
+        boost-system:x86-windows-static `
+        boost-variant:x86-windows-static `
+        boost-lockfree:x86-windows-static `
+        boost-process:x86-windows-static `
+        boost-program-options:x86-windows-static `
+        boost-filesystem:x86-windows-static `
+        boost-uuid:x86-windows-static `
+        luajit:x86-windows-static `
+        glew:x86-windows-static `
+        physfs:x86-windows-static `
+        openal-soft:x86-windows-static `
+        libogg:x86-windows-static `
+        libvorbis:x86-windows-static `
+        zlib:x86-windows-static `
+        libzip:x86-windows-static `
+        openssl:x86-windows-static
 
-    - name: Configurar CMake (com otimizações máximas)
+    - name: Configurar CMake (otimizações máximas + triplet forçado)
       shell: pwsh
       run: |
         cmake -B build -S . `
         -DCMAKE_BUILD_TYPE=Release `
         -DOTCLIENT_LUAJIT=ON `
         -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
+        -DVCPKG_TARGET_TRIPLET=x86-windows-static `
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
 
     - name: Compilar (Release paralelo)
